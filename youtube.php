@@ -21,9 +21,8 @@ function srt_time($time){
 
 $ret=file_get_contents('https://www.youtube.com/watch?v='.$argv[1], false, $scc);
 
-preg_match('/ytplayer\.config\s*=\s*(\{.*\})\;\s*ytplayer/', $ret, $m);
-$config=json_decode($m[1]);
-$player_response=json_decode($config->args->player_response);
+preg_match('/ytInitialPlayerResponse\s*=\s*(\{.*\})\;\s*\</', $ret, $m);
+$player_response=json_decode($m[1]);
 if(!isset($player_response->captions)){
     echo "no caption!\n";
     exit();
@@ -37,7 +36,7 @@ if(isset($argv[2])){
     foreach($captions as $c){
         if($argv[2]===$c->languageCode){
             $title=preg_replace('/\\\\|\/|\:|\*|\?|\"|\<|\>|\|/', '_', $title); // Can't be contained charator in filename
-            $srt_file=$title.' - YouTube.srt';
+            $srt_file=$title. '_' . $argv[2] . ' - YouTube.srt';    // include the language code in the filename
             $xml=simplexml_load_string(file_get_contents($c->baseUrl.'&fmt=srv3', false, $scc));
             
             $srt=fopen($srt_file, 'wt');
